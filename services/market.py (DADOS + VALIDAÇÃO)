@@ -1,0 +1,27 @@
+import requests
+
+def get_stock_data(ticker):
+
+    url = f"https://brapi.dev/api/quote/{ticker}"
+
+    try:
+        r = requests.get(url)
+        data = r.json()
+
+        if "results" not in data or len(data["results"]) == 0:
+            return None
+
+        stock = data["results"][0]
+
+        return {
+            "ticker": stock.get("symbol"),
+            "price": stock.get("regularMarketPrice"),
+            "change": stock.get("regularMarketChangePercent"),
+            "high": stock.get("regularMarketDayHigh"),
+            "low": stock.get("regularMarketDayLow"),
+            "volume": stock.get("regularMarketVolume"),
+            "name": stock.get("longName")
+        }
+
+    except:
+        return None
