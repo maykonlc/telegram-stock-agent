@@ -1,0 +1,9 @@
+services:
+  - type: web
+    name: fundamentos-b3-bot
+
+    runtime: python
+
+    buildCommand: pip install -r requirements.txt
+
+    startCommand: gunicorn app:app
