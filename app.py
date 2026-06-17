@@ -1,69 +1,40 @@
 from flask import Flask, request
-import requests
-import os
+from services.telegram import send_message
+from services.market import get_stock_data
+from services.formatter import format_response
 
 app = Flask(__name__)
-
-TOKEN = os.environ["BOT_TOKEN"]
-
-def enviar(chat_id, texto):
-
-    requests.post(
-        f"https://api.telegram.org/bot{TOKEN}/sendMessage",
-        json={
-            "chat_id": chat_id,
-            "text": texto
-        }
-    )
 
 @app.route("/webhook", methods=["POST"])
 def webhook():
 
     data = request.json
 
+    if "message" not in data:
+        return "ok"
+
     chat_id = data["message"]["chat"]["id"]
+    text = data["message"].get("text", "").upper().strip()
 
-    ticker = data["message"]["text"].upper()
+    # 1. busca dados da ação
+    stock = get_stock_data(text)
 
-    url = f"https://brapi.dev/api/quote/{ticker}"
-
-    r = requests.get(url)
-
-    if r.status_code != 200:
-
-        enviar(
+    # 2. se não existir
+    if not stock:
+        send_message(
             chat_id,
-            f"❌ Não encontrei {ticker}. Digite novamente."
+            f"❌ Não encontrei a ação {text} na B3.\nDigite outro ticker."
         )
-
         return "ok"
 
-    resultado = r.json()
+    # 3. formata resposta
+    message = format_response(stock)
 
-    if not resultado.get("results"):
-
-        enviar(
-            chat_id,
-            f"❌ Não encontrei {ticker}. Digite novamente."
-        )
-
-        return "ok"
-
-    acao = resultado["results"][0]
-
-    mensagem = f"""
-📈 {acao['symbol']}
-
-Empresa:
-{acao.get('longName','N/D')}
-
-Preço:
-R$ {acao.get('regularMarketPrice','N/D')}
-"""
-
-    enviar(chat_id, mensagem)
+    # 4. envia Telegram
+    send_message(chat_id, message)
 
     return "ok"
+
 
 if __name__ == "__main__":
     app.run()
