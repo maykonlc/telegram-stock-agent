@@ -1,18 +1,30 @@
 import requests
 
-def validate_ticker(ticker):
+B3_CACHE = set()
 
-    url = f"https://brapi.dev/api/quote/{ticker}"
-    r = requests.get(url).json()
+def is_valid(ticker):
 
-    if "results" not in r:
-        return False
+    # cache local primeiro
+    if ticker in B3_CACHE:
+        return True
 
-    if not r["results"]:
-        return False
+    # API principal
+    try:
+        r = requests.get(f"https://brapi.dev/api/quote/{ticker}").json()
 
-    # proteção extra
-    if r["results"][0].get("symbol") is None:
-        return False
+        if r.get("results"):
+            B3_CACHE.add(ticker)
+            return True
 
-    return True
+    except:
+        pass
+
+    # fallback leve (Yahoo-like proxy)
+    try:
+        r = requests.get(f"https://query1.finance.yahoo.com/v7/finance/quote?symbols={ticker}.SA")
+        if "quoteResponse" in r.json():
+            return True
+    except:
+        pass
+
+    return False
