@@ -1,26 +1,23 @@
-def build_message(ticker, market, fund):
+def format_message(ticker, market, fund, score):
 
     return f"""
-📊 {ticker} - ANÁLISE COMPLETA
+📊 {ticker} — ANÁLISE PROFISSIONAL
 
-💰 PREÇO: R$ {market['price']}
-📈 VARIAÇÃO: {market['change']}%
+💰 Preço: R$ {market['price']}
+📈 Variação: {market['change']}%
 
 📉 FUNDAMENTOS:
-
 P/L: {fund['pl']}
 P/VP: {fund['pvp']}
 ROE: {fund['roe']}
 ROIC: {fund['roic']}
 DY: {fund['dy']}
-EV/EBITDA: {fund['ebitda']}
-Margem Líquida: {fund['margem_liquida']}
+EV/EBITDA: {fund['ev_ebitda']}
 
-📊 RESUMO:
+🧠 SCORE: {score}/100
 
-- Empresa de qualidade média/alta (baseado em ROE e ROIC)
-- Avaliação depende do setor
-- Usar DY + P/L para decisão de entrada
+📌 INTERPRETAÇÃO:
+{"🟢 FORTE COMPRA" if score > 75 else "🟡 NEUTRO" if score > 50 else "🔴 EVITAR"}
 
-⚠️ Dados podem ter atraso de alguns minutos
+⚠️ Dados podem ter atraso
 """
