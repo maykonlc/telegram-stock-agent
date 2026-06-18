@@ -17,7 +17,14 @@ def webhook():
         return "ok"
 
     chat_id = data["message"]["chat"]["id"]
-    ticker = data["message"].get("text", "").upper().strip()
+   ticker = (
+    data["message"]
+    .get("text", "")
+    .upper()
+    .strip()
+    .replace(".SA", "")
+    .replace(" ", "")
+)
 
     # 1. valida ticker
     if not validate_ticker(ticker):
