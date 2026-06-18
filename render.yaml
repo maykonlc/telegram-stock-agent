@@ -1,6 +1,6 @@
 services:
   - type: web
-    name: fundamentos-b3-bot
+    name: b3-pro-bot
 
     runtime: python
 
