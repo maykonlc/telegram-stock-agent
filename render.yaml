@@ -1,6 +1,6 @@
 services:
   - type: web
-    name: b3-pro-bot
+    name: b3-pro-3
 
     runtime: python
 
