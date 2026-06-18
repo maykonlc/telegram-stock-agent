@@ -1,10 +1,12 @@
 from flask import Flask, request
 
 from services.telegram import send_message
-from services.validator import validate_ticker
-from services.market import get_price_data
+from services.normalizer import normalize_ticker
+from services.validator import is_valid
+from services.market import get_market_data
 from services.fundamentals import get_fundamentals
-from services.formatter import build_message
+from services.scorer import score_stock
+from services.formatter import format_message
 
 app = Flask(__name__)
 
@@ -17,28 +19,27 @@ def webhook():
         return "ok"
 
     chat_id = data["message"]["chat"]["id"]
-   ticker = (
-    data["message"]
-    .get("text", "")
-    .upper()
-    .strip()
-    .replace(".SA", "")
-    .replace(" ", "")
-)
+    raw = data["message"].get("text", "")
 
-    # 1. valida ticker
-    if not validate_ticker(ticker):
+    # 1. normaliza ticker
+    ticker = normalize_ticker(raw)
+
+    # 2. valida
+    if not is_valid(ticker):
         send_message(chat_id, f"❌ Ticker {ticker} não encontrado na B3.")
         return "ok"
 
-    # 2. dados de mercado
-    market = get_price_data(ticker)
+    # 3. dados de mercado
+    market = get_market_data(ticker)
 
-    # 3. fundamentos completos
-    fundamentals = get_fundamentals(ticker)
+    # 4. fundamentos
+    fund = get_fundamentals(ticker)
 
-    # 4. resposta final
-    msg = build_message(ticker, market, fundamentals)
+    # 5. score inteligente
+    score = score_stock(market, fund)
+
+    # 6. resposta final
+    msg = format_message(ticker, market, fund, score)
 
     send_message(chat_id, msg)
 
