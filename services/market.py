@@ -1,20 +1,22 @@
 import requests
 
-def get_price_data(ticker):
+def get_market_data(ticker):
 
-    url = f"https://brapi.dev/api/quote/{ticker}"
+    try:
+        r = requests.get(f"https://brapi.dev/api/quote/{ticker}").json()
 
-    r = requests.get(url).json()
+        if not r.get("results"):
+            return None
 
-    if "results" not in r:
+        s = r["results"][0]
+
+        return {
+            "price": s.get("regularMarketPrice"),
+            "change": s.get("regularMarketChangePercent"),
+            "high": s.get("regularMarketDayHigh"),
+            "low": s.get("regularMarketDayLow"),
+            "volume": s.get("regularMarketVolume")
+        }
+
+    except:
         return None
-
-    s = r["results"][0]
-
-    return {
-        "price": s.get("regularMarketPrice"),
-        "change": s.get("regularMarketChangePercent"),
-        "high": s.get("regularMarketDayHigh"),
-        "low": s.get("regularMarketDayLow"),
-        "volume": s.get("regularMarketVolume")
-    }
