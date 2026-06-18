@@ -5,4 +5,14 @@ def validate_ticker(ticker):
     url = f"https://brapi.dev/api/quote/{ticker}"
     r = requests.get(url).json()
 
-    return "results" in r and len(r["results"]) > 0
+    if "results" not in r:
+        return False
+
+    if not r["results"]:
+        return False
+
+    # proteção extra
+    if r["results"][0].get("symbol") is None:
+        return False
+
+    return True
